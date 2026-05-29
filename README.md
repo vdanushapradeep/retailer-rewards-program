@@ -5,8 +5,8 @@ Spring Boot service that calculates customer reward points from retail transacti
 ## Features
 
 - Calculate reward points per transaction using the rules:
-	- 1 point per dollar for each dollar spent over $50 and up to $100
-	- 2 points per dollar for each dollar spent over $100
+    - 1 point per dollar for each dollar spent over $50 and up to $100
+    - 2 points per dollar for each dollar spent over $100
 - Aggregate points per customer by month and total across months
 - REST API: list all customers' reward summaries and fetch a single customer's summary
 - Sample data loader and unit/integration tests included
@@ -32,14 +32,16 @@ The service defaults to http://localhost:8080.
 
 Base path: `/api/rewards`
 
+
 - GET `/api/rewards`
-	- Description: Returns reward summaries for all customers
-	- Response: `200 OK` with JSON array of `RewardSummary` objects
+    - Description: Returns reward summaries for all customers
+    - Response: `200 OK` with JSON array of `RewardSummary` objects
+
 
 - GET `/api/rewards/{customerId}`
-	- Description: Returns a single customer's reward summary
-	- Response: `200 OK` with `RewardSummary` when found
-	- Response: `404 Not Found` when the customer does not exist (throws `ResourceNotFoundException`)
+    - Description: Returns a single customer's reward summary
+    - Response: `200 OK` with `RewardSummary` when found
+    - Response: `404 Not Found` when the customer does not exist (throws `ResourceNotFoundException`)
 
 Example request (curl):
 
@@ -51,12 +53,12 @@ Example response (abridged):
 
 ```json
 {
-	"customerId": "123",
-	"monthlyRewards": [
-		{ "month": "2023-01", "points": 120 },
-		{ "month": "2023-02", "points": 75 }
-	],
-	"totalPoints": 195
+    "customerId": "123",
+    "monthlyRewards": [
+        { "month": "2023-01", "points": 120 },
+        { "month": "2023-02", "points": 75 }
+    ],
+    "totalPoints": 195
 }
 ```
 
