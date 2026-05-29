@@ -22,7 +22,7 @@ Spring Boot service that calculates customer reward points from retail transacti
 Build the project and run with Maven (development):
 
 ```powershell
-mvn clean package
+mvn clean install
 mvn spring-boot:run
 ```
 
