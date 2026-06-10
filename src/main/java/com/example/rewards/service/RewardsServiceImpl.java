@@ -10,6 +10,7 @@ import com.example.rewards.util.RewardCalculator;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,7 +51,12 @@ public class RewardsServiceImpl implements RewardsService {
      * @return list of reward summaries for all customers
      */
     public List<RewardSummaryDto> getAllCustomerRewards() {
-        List<TransactionEntity> all = transactionRepository.findAll();
+        // Business rule: only consider transactions from the last 90 days
+        LocalDate cutoff = LocalDate.now().minusDays(90);
+
+        List<TransactionEntity> all = transactionRepository.findAll().stream()
+                .filter(t -> !t.getTransactionDate().isBefore(cutoff))
+                .collect(Collectors.toList());
 
         Map<Long, List<TransactionEntity>> byCustomer = all.stream()
                 .collect(Collectors.groupingBy(t -> t.getCustomer().getId()));
@@ -74,8 +80,12 @@ public class RewardsServiceImpl implements RewardsService {
         var customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + id));
 
+        // Business rule: only consider transactions from the last 90 days
+        LocalDate cutoff = LocalDate.now().minusDays(90);
+
         List<TransactionEntity> transactions = transactionRepository.findAll().stream()
                 .filter(t -> t.getCustomer().getId().equals(id))
+                .filter(t -> !t.getTransactionDate().isBefore(cutoff))
                 .collect(Collectors.toList());
         return buildSummaryDto(id, transactions, customer.getName());
     }

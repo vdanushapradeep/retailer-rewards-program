@@ -50,8 +50,9 @@ class RewardsServiceImplTest {
         RewardCalculator calc = new RewardCalculator();
 
         CustomerEntity c = CustomerEntity.builder().id(1L).name("Bob").build();
-        TransactionEntity t1 = TransactionEntity.builder().customer(c).amount(BigDecimal.valueOf(120)).transactionDate(LocalDate.of(2026,1,10)).build();
-        TransactionEntity t2 = TransactionEntity.builder().customer(c).amount(BigDecimal.valueOf(75)).transactionDate(LocalDate.of(2026,2,5)).build();
+        // use dates within the last 90 days so business rule includes them
+        TransactionEntity t1 = TransactionEntity.builder().customer(c).amount(BigDecimal.valueOf(120)).transactionDate(LocalDate.now().minusDays(30)).build();
+        TransactionEntity t2 = TransactionEntity.builder().customer(c).amount(BigDecimal.valueOf(75)).transactionDate(LocalDate.now().minusDays(60)).build();
 
         when(txRepo.findAll()).thenReturn(List.of(t1, t2));
         when(custRepo.findById(1L)).thenReturn(Optional.of(c));
