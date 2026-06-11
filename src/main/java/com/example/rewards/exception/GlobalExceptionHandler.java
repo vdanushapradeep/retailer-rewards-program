@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.Instant;
 
@@ -133,6 +134,23 @@ public class GlobalExceptionHandler {
                                 .path(req.getRequestURI())
                                 .build();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .body(body);
+        }
+
+        @ExceptionHandler(NoHandlerFoundException.class)
+        /**
+         * Handle requests for unknown routes and return a JSON 404 payload.
+         */
+        public ResponseEntity<ErrorResponse> handleNoHandlerFound(NoHandlerFoundException ex, HttpServletRequest req) {
+                ErrorResponse body = ErrorResponse.builder()
+                                .timestamp(Instant.now())
+                                .status(HttpStatus.NOT_FOUND.value())
+                                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                                .message("No handler found for " + ex.getHttpMethod() + " " + ex.getRequestURL())
+                                .path(req.getRequestURI())
+                                .build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .body(body);
         }
