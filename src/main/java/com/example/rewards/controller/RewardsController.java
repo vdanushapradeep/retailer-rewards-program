@@ -2,15 +2,19 @@ package com.example.rewards.controller;
 
 import com.example.rewards.dto.RewardSummaryDto;
 import com.example.rewards.service.RewardsService;
-import org.springframework.validation.annotation.Validated;
+
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * REST controller exposing rewards endpoints.
@@ -38,12 +42,13 @@ public class RewardsController {
     /**
      * Return all customers' reward summaries.
      *
-     * @return 200 OK with a JSON array of
-     *         {@link com.example.rewards.model.RewardSummary}
+     * @return 200 OK with only the current page content
      */
     @GetMapping
-    public ResponseEntity<List<RewardSummaryDto>> all() {
-        return ResponseEntity.ok(rewardsService.getAllCustomerRewards());
+    public ResponseEntity<List<RewardSummaryDto>> all(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+        return ResponseEntity.ok(rewardsService.getAllCustomerRewards(page, size));
     }
 
     /**
