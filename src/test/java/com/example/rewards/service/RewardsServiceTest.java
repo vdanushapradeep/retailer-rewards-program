@@ -3,6 +3,7 @@ package com.example.rewards.service;
 import com.example.rewards.util.RewardCalculator;
 import com.example.rewards.repository.TransactionRepository;
 import org.junit.jupiter.api.Test;
+import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -30,9 +31,11 @@ class RewardsServiceTest {
         assertEquals(true, summaries.size() >= 1);
 
         // verify totals computed by the service match a recompute over the raw transactions
+        LocalDate cutoff = LocalDate.now().minusDays(90);
         for (var summary : summaries) {
-            long expected = transactionRepository.findAll().stream()
-                .filter(t -> t.getCustomer().getId().equals(summary.getCustomerId()))
+            long expected = transactionRepository
+                .findByCustomerIdAndTransactionDateGreaterThanEqual(summary.getCustomerId(), cutoff)
+                .stream()
                 .mapToLong(t -> new RewardCalculator().pointsForAmount(t.getAmount()))
                 .sum();
             assertEquals(expected, summary.getTotalPoints());
