@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -195,5 +196,18 @@ class GlobalExceptionHandlerTest {
         var resp = handler.handleNumberFormat(ex, req);
         assertEquals(400, resp.getStatusCodeValue());
         assertTrue(resp.getBody().getMessage().contains("input string"));
+    }
+
+    /**
+     * Unknown routes should be mapped to standardized 404 JSON payloads.
+     */
+    @Test
+    void handleNoHandlerFoundReturns404() {
+        var ex = new NoHandlerFoundException("GET", "/api/unknown", null);
+        var resp = handler.handleNoHandlerFound(ex, req);
+        assertEquals(404, resp.getStatusCodeValue());
+        assertEquals("Not Found", resp.getBody().getError());
+        assertTrue(resp.getBody().getMessage().contains("No handler found for GET /api/unknown"));
+        assertEquals("/test", resp.getBody().getPath());
     }
 }
