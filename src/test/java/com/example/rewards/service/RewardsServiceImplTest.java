@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +55,8 @@ class RewardsServiceImplTest {
         TransactionEntity t1 = TransactionEntity.builder().customer(c).amount(BigDecimal.valueOf(120)).transactionDate(LocalDate.now().minusDays(30)).build();
         TransactionEntity t2 = TransactionEntity.builder().customer(c).amount(BigDecimal.valueOf(75)).transactionDate(LocalDate.now().minusDays(60)).build();
 
-        when(txRepo.findAll()).thenReturn(List.of(t1, t2));
+        when(txRepo.findByTransactionDateGreaterThanEqual(any(LocalDate.class))).thenReturn(List.of(t1, t2));
+        when(txRepo.findByCustomerIdAndTransactionDateGreaterThanEqual(any(Long.class), any(LocalDate.class))).thenReturn(List.of(t1, t2));
         when(custRepo.findById(1L)).thenReturn(Optional.of(c));
 
         RewardsServiceImpl svc = new RewardsServiceImpl(txRepo, custRepo, calc);
