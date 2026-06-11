@@ -36,6 +36,12 @@ public class RewardsControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/rewards returns 200")
+    void getAllRewardsPerCustomer() throws Exception {
+        mvc.perform(get("/api/rewards/2"))
+                .andExpect(status().isOk());
+
+    @Test
     @DisplayName("GET /api/rewards/{id} returns 404 for missing customer")
     void getMissingCustomer() throws Exception {
         mvc.perform(get("/api/rewards/999"))
