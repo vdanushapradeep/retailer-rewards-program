@@ -1,6 +1,7 @@
 package com.example.rewards.controller;
 
 import com.example.rewards.RewardsApplication;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.containsString;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -32,7 +36,40 @@ public class RewardsControllerTest {
     @DisplayName("GET /api/rewards returns 200")
     void getAllRewards() throws Exception {
         mvc.perform(get("/api/rewards"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(10)));
+    }
+
+    @Test
+    @DisplayName("GET /api/rewards supports pagination params")
+    void getAllRewardsWithPaginationParams() throws Exception {
+        mvc.perform(get("/api/rewards").param("page", "0").param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    @DisplayName("GET /api/rewards returns empty list for out-of-range page")
+    void getAllRewardsOutOfRangePageReturnsEmpty() throws Exception {
+        mvc.perform(get("/api/rewards").param("page", "99").param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("GET /api/rewards rejects negative page")
+    void getAllRewardsRejectsNegativePage() throws Exception {
+        mvc.perform(get("/api/rewards").param("page", "-1").param("size", "2"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", equalTo(400)));
+    }
+
+    @Test
+    @DisplayName("GET /api/rewards rejects size > 100")
+    void getAllRewardsRejectsTooLargeSize() throws Exception {
+        mvc.perform(get("/api/rewards").param("page", "0").param("size", "101"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", equalTo(400)));
     }
 
     @Test
@@ -73,6 +110,18 @@ public class RewardsControllerTest {
                 .andExpect(jsonPath("$.error", equalTo("Not Found")))
                 .andExpect(jsonPath("$.message", equalTo("Customer not found: 999")))
                 .andExpect(jsonPath("$.path", equalTo("/api/rewards/999")))
+                .andExpect(jsonPath("$.timestamp", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("Unknown API path returns standardized 404 JSON")
+    void unknownApiPathReturnsErrorPayload() throws Exception {
+        mvc.perform(get("/api/unknown"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", equalTo(404)))
+                .andExpect(jsonPath("$.error", equalTo("Not Found")))
+                .andExpect(jsonPath("$.message", containsString("No handler found")))
+                .andExpect(jsonPath("$.path", equalTo("/api/unknown")))
                 .andExpect(jsonPath("$.timestamp", notNullValue()));
     }
 }
