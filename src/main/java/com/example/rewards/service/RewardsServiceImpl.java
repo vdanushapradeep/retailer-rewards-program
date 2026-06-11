@@ -54,9 +54,7 @@ public class RewardsServiceImpl implements RewardsService {
         // Business rule: only consider transactions from the last 90 days
         LocalDate cutoff = LocalDate.now().minusDays(90);
 
-        List<TransactionEntity> all = transactionRepository.findAll().stream()
-                .filter(t -> !t.getTransactionDate().isBefore(cutoff))
-                .collect(Collectors.toList());
+        List<TransactionEntity> all = transactionRepository.findByTransactionDateGreaterThanEqual(cutoff);
 
         Map<Long, List<TransactionEntity>> byCustomer = all.stream()
                 .collect(Collectors.groupingBy(t -> t.getCustomer().getId()));
@@ -83,10 +81,8 @@ public class RewardsServiceImpl implements RewardsService {
         // Business rule: only consider transactions from the last 90 days
         LocalDate cutoff = LocalDate.now().minusDays(90);
 
-        List<TransactionEntity> transactions = transactionRepository.findAll().stream()
-                .filter(t -> t.getCustomer().getId().equals(id))
-                .filter(t -> !t.getTransactionDate().isBefore(cutoff))
-                .collect(Collectors.toList());
+        List<TransactionEntity> transactions = transactionRepository
+                .findByCustomerIdAndTransactionDateGreaterThanEqual(id, cutoff);
         return buildSummaryDto(id, transactions, customer.getName());
     }
 
