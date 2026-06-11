@@ -10,11 +10,13 @@ import java.util.List;
 public interface RewardsService {
 
         /**
-         * Aggregate reward summaries for every customer.
+         * Aggregate reward summaries for customers in a paged view.
          *
-         * @return list of reward summaries
+         * @param page zero-based page index
+         * @param size page size
+         * @return current page content of reward summaries
          */
-        List<RewardSummaryDto> getAllCustomerRewards();
+        List<RewardSummaryDto> getAllCustomerRewards(int page, int size);
 
         /**
          * Retrieve reward summary for a single customer.
