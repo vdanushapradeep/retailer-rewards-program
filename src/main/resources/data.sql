@@ -1,16 +1,34 @@
 INSERT INTO customers (id, name) VALUES (1, 'Alice');
 INSERT INTO customers (id, name) VALUES (2, 'Bob');
 INSERT INTO customers (id, name) VALUES (3, 'Carol');
+INSERT INTO customers (id, name) VALUES (4, 'Dave');
+INSERT INTO customers (id, name) VALUES (5, 'Erin');
 
--- Transactions for Alice (id=1)
-INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (1, 1, 120.00, '2026-03-15');
-INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (2, 1, 75.50, '2026-04-10');
-INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (3, 1, 10.00, '2026-05-05');
+-- Transaction dates are relative to CURRENT_DATE so the sample remains valid over time.
+-- The service includes only transactions from the last 90 days (inclusive).
 
--- Transactions for Bob (id=2)
-INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (4, 2, 200.00, '2026-03-20');
-INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (5, 2, 99.99, '2026-04-12');
+-- Alice (id=1): mixed spending across multiple recent months
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (1, 1, 120.00, DATEADD('DAY', -10, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (2, 1, 75.50, DATEADD('DAY', -35, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (3, 1, 10.00, DATEADD('DAY', -70, CURRENT_DATE));
 
--- Transactions for Carol (id=3)
-INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (6, 3, 50.00, '2026-05-01');
-INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (7, 3, 51.25, '2026-05-15');
+-- Bob (id=2): threshold and high-value examples
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (4, 2, 200.00, DATEADD('DAY', -5, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (5, 2, 99.99, DATEADD('DAY', -40, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (6, 2, 100.00, DATEADD('DAY', -60, CURRENT_DATE));
+
+-- Carol (id=3): exact threshold and just-above threshold values
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (7, 3, 50.00, DATEADD('DAY', -15, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (8, 3, 51.25, DATEADD('DAY', -45, CURRENT_DATE));
+
+-- Dave (id=4): cutoff boundary coverage
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (9, 4, 80.00, DATEADD('DAY', -90, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (10, 4, 110.00, DATEADD('DAY', -91, CURRENT_DATE));
+
+-- Erin (id=5): fractional and threshold edge coverage
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (11, 5, 49.49, DATEADD('DAY', -12, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (12, 5, 50.50, DATEADD('DAY', -22, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (13, 5, 100.49, DATEADD('DAY', -32, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (14, 5, 100.50, DATEADD('DAY', -42, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (15, 5, 150.75, DATEADD('DAY', -52, CURRENT_DATE));
+INSERT INTO transactions (id, customer_id, amount, transaction_date) VALUES (16, 5, 300.00, DATEADD('DAY', -120, CURRENT_DATE));
