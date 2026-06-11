@@ -73,7 +73,6 @@
                         <!-- Exclude entity and dto packages and the application class from coverage -->
                         <exclude>**/entity/**</exclude>
                         <exclude>**/dto/**</exclude>
-                        <exclude>**/RewardsApplication.java</exclude>
                     </excludes>
                 </configuration>
                 <executions>
