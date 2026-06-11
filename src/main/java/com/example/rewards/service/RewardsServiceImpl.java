@@ -60,7 +60,10 @@ public class RewardsServiceImpl implements RewardsService {
                 .collect(Collectors.groupingBy(t -> t.getCustomer().getId()));
 
         return byCustomer.entrySet().stream()
-                .map(e -> buildSummaryDto(e.getKey(), e.getValue()))
+                .map(e -> buildSummaryDto(
+                        e.getKey(),
+                        e.getValue(),
+                        e.getValue().get(0).getCustomer().getName()))
                 .sorted(Comparator.comparing(RewardSummaryDto::getCustomerId))
                 .collect(Collectors.toList());
     }
@@ -84,20 +87,6 @@ public class RewardsServiceImpl implements RewardsService {
         List<TransactionEntity> transactions = transactionRepository
                 .findByCustomerIdAndTransactionDateGreaterThanEqual(id, cutoff);
         return buildSummaryDto(id, transactions, customer.getName());
-    }
-
-    /**
-     * Helper that builds a {@link RewardSummaryDto} when the customer name is
-     * not provided; the name will be resolved from the {@code customerRepository}.
-     *
-     * @param customerId   id of the customer
-     * @param transactions transactions belonging to the customer
-     * @return assembled reward summary DTO
-     */
-    private RewardSummaryDto buildSummaryDto(Long customerId,
-            List<TransactionEntity> transactions) {
-        String name = customerRepository.findById(customerId).map(c -> c.getName()).orElse("");
-        return buildSummaryDto(customerId, transactions, name);
     }
 
     /**
