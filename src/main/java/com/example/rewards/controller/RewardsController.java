@@ -1,7 +1,9 @@
 package com.example.rewards.controller;
 
-import com.example.rewards.model.RewardSummary;
+import com.example.rewards.dto.RewardSummaryDto;
 import com.example.rewards.service.RewardsService;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,10 +21,16 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/rewards")
+@Validated
 public class RewardsController {
 
     private final RewardsService rewardsService;
 
+    /**
+     * Create controller with the provided {@link RewardsService}.
+     *
+     * @param rewardsService service used to fetch reward summaries
+     */
     public RewardsController(RewardsService rewardsService) {
         this.rewardsService = rewardsService;
     }
@@ -30,25 +38,23 @@ public class RewardsController {
     /**
      * Return all customers' reward summaries.
      *
-     * @return 200 OK with a JSON array of {@link com.example.rewards.model.RewardSummary}
+     * @return 200 OK with a JSON array of
+     *         {@link com.example.rewards.model.RewardSummary}
      */
     @GetMapping
-    public ResponseEntity<List<RewardSummary>> all() {
-        return ResponseEntity.ok(rewardsService.allCustomerRewards());
+    public ResponseEntity<List<RewardSummaryDto>> all() {
+        return ResponseEntity.ok(rewardsService.getAllCustomerRewards());
     }
 
     /**
      * Return a single customer's reward summary.
      *
      * @param customerId identifier of the customer
-     * @return 200 OK with the summary when found, or 404 Not Found when no such customer exists
+     * @return 200 OK with the summary when found, or 404 Not Found when no such
+     *         customer exists
      */
     @GetMapping("/{customerId}")
-    public ResponseEntity<RewardSummary> byCustomer(@PathVariable String customerId) {
-        return rewardsService.allCustomerRewards().stream()
-                .filter(r -> r.getCustomerId().equals(customerId))
-                .findFirst()
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new com.example.rewards.exception.ResourceNotFoundException("Customer '" + customerId + "' not found"));
+    public ResponseEntity<RewardSummaryDto> byCustomer(@PathVariable @Min(1) Long customerId) {
+        return ResponseEntity.ok(rewardsService.getCustomerRewards(customerId));
     }
 }

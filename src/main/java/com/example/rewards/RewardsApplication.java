@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 public class RewardsApplication {
+
     /**
      * Main method used when launching the application from the command line.
      *

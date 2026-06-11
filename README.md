@@ -66,14 +66,15 @@ The `RewardSummary` model contains the customer identifier, a list of monthly po
 
 ## Sample Data
 
-At startup `SampleDataLoader` inserts sample customers and transactions so the API returns data immediately. See [src/main/java/com/example/rewards/data/SampleDataLoader.java](src/main/java/com/example/rewards/data/SampleDataLoader.java).
+The application uses an embedded H2 database seeded from `src/main/resources/data.sql` with fixed calendar dates. The API returns data immediately from the database at startup.
 
 ## Project layout (important files)
 
 - Controller: [src/main/java/com/example/rewards/controller/RewardsController.java](src/main/java/com/example/rewards/controller/RewardsController.java)
 - Service: [src/main/java/com/example/rewards/service/RewardsService.java](src/main/java/com/example/rewards/service/RewardsService.java)
 - Calculator util: [src/main/java/com/example/rewards/util/RewardCalculator.java](src/main/java/com/example/rewards/util/RewardCalculator.java)
-- Models: [src/main/java/com/example/rewards/model/](src/main/java/com/example/rewards/model/)
+- Entities: [src/main/java/com/example/rewards/entity/](src/main/java/com/example/rewards/entity/)
+- DTOs: [src/main/java/com/example/rewards/dto/](src/main/java/com/example/rewards/dto/)
 - Tests: [src/test/java/com/example/rewards/](src/test/java/com/example/rewards/)
 
 ## Tests
