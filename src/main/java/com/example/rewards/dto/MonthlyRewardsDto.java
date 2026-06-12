@@ -2,10 +2,12 @@ package com.example.rewards.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+import java.math.BigDecimal;
+
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,5 +16,5 @@ import lombok.NoArgsConstructor;
  */
 public class MonthlyRewardsDto {
     private String yearMonth;
-    private long points;
+    private BigDecimal points;
 }
