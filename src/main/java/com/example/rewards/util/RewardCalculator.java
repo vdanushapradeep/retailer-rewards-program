@@ -13,35 +13,39 @@ public class RewardCalculator {
 
     private static final BigDecimal FIFTY = new BigDecimal("50");
     private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
+    private static final BigDecimal TWO = new BigDecimal("2");
+    private static final BigDecimal ZERO = new BigDecimal("0.00");
 
-    public long pointsForAmount(BigDecimal amount) {
-        /**
-         * Calculate reward points for a monetary amount.
-         * <p>
-         * Rules:
-         * - amounts &le; 50 -> 0 points
-         * - amounts between 50 and 100 -> 1 point per dollar above 50
-         * - amounts above 100 -> 2 points per dollar above 100 plus 50
-         *
-         * @param amount monetary amount (may be null)
-         * @return points as a long value
-         */
-        if (amount == null)
-            return 0L;
-        BigDecimal rounded = amount.setScale(0, RoundingMode.HALF_UP);
-        if (rounded.compareTo(FIFTY) <= 0)
-            return 0L;
-
-        long points = 0L;
-        if (rounded.compareTo(ONE_HUNDRED) > 0) {
-            BigDecimal above100 = rounded.subtract(ONE_HUNDRED);
-            points += above100.longValueExact() * 2L;
-            points += 50L;
-        } else {
-            BigDecimal above50 = rounded.subtract(FIFTY);
-            points += above50.longValueExact();
+    /**
+     * Calculate reward points for a monetary amount.
+     * <p>
+     * Rules:
+     * - amounts &le; 50 -> 0.00 points
+     * - amounts between 50 and 100 -> 1 point per dollar above 50
+     * - amounts above 100 -> 2 points per dollar above 100 plus 50
+     *
+     * @param amount monetary amount (may be null)
+     * @return points with a scale of 2
+     */
+    public BigDecimal pointsForAmount(BigDecimal amount) {
+        if (amount == null) {
+            return ZERO;
         }
-        return points;
+
+        BigDecimal normalized = amount.setScale(2, RoundingMode.HALF_UP);
+        if (normalized.compareTo(FIFTY) <= 0) {
+            return ZERO;
+        }
+
+        BigDecimal points;
+        if (normalized.compareTo(ONE_HUNDRED) > 0) {
+            BigDecimal above100 = normalized.subtract(ONE_HUNDRED);
+            points = above100.multiply(TWO).add(new BigDecimal("50"));
+        } else {
+            points = normalized.subtract(FIFTY);
+        }
+
+        return points.setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -50,7 +54,7 @@ public class RewardCalculator {
      * @param amount value in decimal dollars
      * @return computed points
      */
-    public long pointsForAmount(double amount) {
+    public BigDecimal pointsForAmount(double amount) {
         return pointsForAmount(BigDecimal.valueOf(amount));
     }
 }
