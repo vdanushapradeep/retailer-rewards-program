@@ -1,11 +1,15 @@
 package com.example.rewards.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "customers")
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,5 +22,6 @@ public class CustomerEntity {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank
     private String name;
 }
