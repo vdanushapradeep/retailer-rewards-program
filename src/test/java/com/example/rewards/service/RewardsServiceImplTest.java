@@ -81,7 +81,7 @@ class RewardsServiceImplTest {
         assertEquals(1L, summary.getCustomerId());
         assertEquals("Bob", summary.getCustomerName());
         assertEquals(2, summary.getMonthlyRewards().size());
-        assertEquals(115L, summary.getTotalPoints());
+        assertEquals(new BigDecimal("115.00"), summary.getTotalPoints());
     }
 
     @Test
@@ -118,7 +118,40 @@ class RewardsServiceImplTest {
         assertEquals(1, all.size());
         assertEquals(7L, all.get(0).getCustomerId());
         assertEquals("NoTx", all.get(0).getCustomerName());
-        assertEquals(0L, all.get(0).getTotalPoints());
+        assertEquals(new BigDecimal("0.00"), all.get(0).getTotalPoints());
         assertTrue(all.get(0).getMonthlyRewards().isEmpty());
     }
+
+    @Test
+    void getCustomerRewardsKeepsSameMonthFromDifferentYearsSeparate() {
+        TransactionRepository txRepo = mock(TransactionRepository.class);
+        CustomerRepository custRepo = mock(CustomerRepository.class);
+        RewardCalculator calc = new RewardCalculator();
+
+        CustomerEntity c = CustomerEntity.builder().id(2L).name("Alice").build();
+        TransactionEntity januaryThisYear = TransactionEntity.builder()
+                .customer(c)
+                .amount(BigDecimal.valueOf(120))
+                .transactionDate(LocalDate.of(2026, 1, 15))
+                .build();
+        TransactionEntity januaryPreviousYear = TransactionEntity.builder()
+                .customer(c)
+                .amount(BigDecimal.valueOf(80))
+                .transactionDate(LocalDate.of(2025, 1, 20))
+                .build();
+
+        when(custRepo.findById(2L)).thenReturn(Optional.of(c));
+        when(txRepo.findByCustomerIdAndTransactionDateGreaterThanEqual(any(Long.class), any(LocalDate.class)))
+                .thenReturn(List.of(januaryThisYear, januaryPreviousYear));
+
+        RewardsServiceImpl svc = new RewardsServiceImpl(txRepo, custRepo, calc);
+
+        var summary = svc.getCustomerRewards(2L);
+        assertEquals(2, summary.getMonthlyRewards().size());
+        assertEquals("2025-01", summary.getMonthlyRewards().get(0).getYearMonth());
+        assertEquals(new BigDecimal("30.00"), summary.getMonthlyRewards().get(0).getPoints());
+        assertEquals("2026-01", summary.getMonthlyRewards().get(1).getYearMonth());
+        assertEquals(new BigDecimal("90.00"), summary.getMonthlyRewards().get(1).getPoints());
+    }
 }
+
