@@ -3,11 +3,13 @@ package com.example.rewards.service;
 import com.example.rewards.repository.TransactionRepository;
 import com.example.rewards.util.RewardCalculator;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Value;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,6 +26,9 @@ class RewardsServiceTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Value("${rewards.transaction-lookback-days:90}")
+    private long transactionLookbackDays;
+
     @Test
     void sampleDataAggregationMatchesCalculator() {
         // Use the sample dataset loaded by SampleDataLoader and ensure that
@@ -34,13 +39,13 @@ class RewardsServiceTest {
 
         // verify totals computed by the service match a recompute over the raw
         // transactions
-        LocalDate cutoff = LocalDate.now().minusDays(90);
+        LocalDate cutoff = LocalDate.now().minusDays(transactionLookbackDays);
         for (var summary : summaries) {
-            long expected = transactionRepository
+            BigDecimal expected = transactionRepository
                     .findByCustomerIdAndTransactionDateGreaterThanEqual(summary.getCustomerId(), cutoff)
                     .stream()
-                    .mapToLong(t -> new RewardCalculator().pointsForAmount(t.getAmount()))
-                    .sum();
+                    .map(t -> new RewardCalculator().pointsForAmount(t.getAmount()))
+                    .reduce(new BigDecimal("0.00"), BigDecimal::add);
             assertEquals(expected, summary.getTotalPoints());
         }
     }
