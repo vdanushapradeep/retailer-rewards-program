@@ -48,7 +48,7 @@ class GlobalExceptionHandlerTest {
     void handleNotFoundReturns404() {
         var ex = new ResourceNotFoundException("missing");
         var resp = handler.handleNotFound(ex, req);
-        assertEquals(404, resp.getStatusCodeValue());
+        assertEquals(404, resp.getStatusCode().value());
         assertEquals("missing", resp.getBody().getMessage());
     }
 
@@ -59,7 +59,7 @@ class GlobalExceptionHandlerTest {
     void handleMethodNotAllowedReturns405() {
         var ex = new HttpRequestMethodNotSupportedException("POST");
         var resp = handler.handleMethodNotAllowed(ex, req);
-        assertEquals(405, resp.getStatusCodeValue());
+        assertEquals(405, resp.getStatusCode().value());
         assertNotNull(resp.getBody().getMessage());
     }
 
@@ -70,7 +70,7 @@ class GlobalExceptionHandlerTest {
     void handleGenericReturns500() {
         var ex = new RuntimeException("boom");
         var resp = handler.handleGeneric(ex, req);
-        assertEquals(500, resp.getStatusCodeValue());
+        assertEquals(500, resp.getStatusCode().value());
         assertEquals("boom", resp.getBody().getMessage());
     }
 
@@ -85,7 +85,7 @@ class GlobalExceptionHandlerTest {
         binding.addError(new FieldError("obj", "age", "must not be null"));
         var ex = new MethodArgumentNotValidException(param, binding);
         var resp = handler.handleValidation(ex, req);
-        assertEquals(400, resp.getStatusCodeValue());
+        assertEquals(400, resp.getStatusCode().value());
         assertTrue(resp.getBody().getMessage().contains("age must not be null"));
     }
 
@@ -169,7 +169,7 @@ class GlobalExceptionHandlerTest {
 
         var ex = new ConstraintViolationException(Collections.singleton(cv));
         var resp = handler.handleConstraintViolation(ex, req);
-        assertEquals(400, resp.getStatusCodeValue());
+        assertEquals(400, resp.getStatusCode().value());
         assertTrue(resp.getBody().getMessage().contains("field"));
     }
 
@@ -183,7 +183,7 @@ class GlobalExceptionHandlerTest {
         var ex = new MethodArgumentTypeMismatchException("abc", Integer.class, "id", param,
                 new IllegalArgumentException());
         var resp = handler.handleTypeMismatch(ex, req);
-        assertEquals(400, resp.getStatusCodeValue());
+        assertEquals(400, resp.getStatusCode().value());
         assertTrue(resp.getBody().getMessage().contains("id"));
     }
 
@@ -194,7 +194,7 @@ class GlobalExceptionHandlerTest {
     void handleNumberFormatReturnsBadRequest() {
         var ex = new NumberFormatException("For input string: \"abc\"");
         var resp = handler.handleNumberFormat(ex, req);
-        assertEquals(400, resp.getStatusCodeValue());
+        assertEquals(400, resp.getStatusCode().value());
         assertTrue(resp.getBody().getMessage().contains("input string"));
     }
 
@@ -205,7 +205,7 @@ class GlobalExceptionHandlerTest {
     void handleNoHandlerFoundReturns404() {
         var ex = new NoHandlerFoundException("GET", "/api/unknown", null);
         var resp = handler.handleNoHandlerFound(ex, req);
-        assertEquals(404, resp.getStatusCodeValue());
+        assertEquals(404, resp.getStatusCode().value());
         assertEquals("Not Found", resp.getBody().getError());
         assertTrue(resp.getBody().getMessage().contains("No handler found for GET /api/unknown"));
         assertEquals("/test", resp.getBody().getPath());
