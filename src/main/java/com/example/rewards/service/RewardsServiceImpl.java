@@ -8,11 +8,16 @@ import com.example.rewards.repository.CustomerRepository;
 import com.example.rewards.repository.TransactionRepository;
 import com.example.rewards.util.RewardCalculator;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.time.YearMonth;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,7 +34,10 @@ public class RewardsServiceImpl implements RewardsService {
         private final CustomerRepository customerRepository;
         private final RewardCalculator calculator;
 
-        private static final DateTimeFormatter YM = DateTimeFormatter.ofPattern("yyyy-MM");
+        private static final BigDecimal ZERO = new BigDecimal("0.00");
+
+        @Value("${rewards.transaction-lookback-days:90}")
+        private long transactionLookbackDays;
 
         /**
          * Construct the service with required repositories and calculator.
@@ -47,6 +55,13 @@ public class RewardsServiceImpl implements RewardsService {
         }
 
         @Override
+        /**
+         * Aggregate reward summaries for the requested page of customers.
+         *
+         * @param page zero-based page index
+         * @param size page size
+         * @return reward summaries for customers in the requested page
+         */
         public List<RewardSummaryDto> getAllCustomerRewards(int page, int size) {
                 Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
                 var customerPage = customerRepository.findAll(pageable);
@@ -54,7 +69,7 @@ public class RewardsServiceImpl implements RewardsService {
                                 .map(c -> c.getId())
                                 .collect(Collectors.toList());
 
-                LocalDate cutoff = LocalDate.now().minusDays(90);
+                LocalDate cutoff = currentCutoffDate();
                 List<TransactionEntity> transactions = customerIds.isEmpty()
                                 ? List.of()
                                 : transactionRepository.findByCustomerIdInAndTransactionDateGreaterThanEqual(
@@ -87,7 +102,7 @@ public class RewardsServiceImpl implements RewardsService {
                                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + id));
 
                 // Business rule: only consider transactions from the last 90 days
-                LocalDate cutoff = LocalDate.now().minusDays(90);
+                LocalDate cutoff = currentCutoffDate();
 
                 List<TransactionEntity> transactions = transactionRepository
                                 .findByCustomerIdAndTransactionDateGreaterThanEqual(id, cutoff);
@@ -104,18 +119,31 @@ public class RewardsServiceImpl implements RewardsService {
          */
         private RewardSummaryDto buildSummaryDto(Long customerId,
                         List<TransactionEntity> transactions, String name) {
-                Map<String, Long> perMonth = transactions.stream()
-                                .collect(Collectors.groupingBy(t -> t.getTransactionDate().format(YM),
-                                                Collectors.summingLong(
-                                                                t -> calculator.pointsForAmount(t.getAmount()))));
+                Map<YearMonth, BigDecimal> perMonth = transactions.stream()
+                                .collect(Collectors.groupingBy(t -> YearMonth.from(t.getTransactionDate()),
+                                                Collectors.reducing(
+                                                                ZERO,
+                                                                t -> calculator.pointsForAmount(t.getAmount()),
+                                                                BigDecimal::add)));
 
                 List<MonthlyRewardsDto> monthlyRewards = perMonth.entrySet().stream()
-                                .map(e -> new MonthlyRewardsDto(e.getKey(), e.getValue()))
+                                .map(e -> new MonthlyRewardsDto(e.getKey().toString(), e.getValue()))
                                 .sorted(Comparator.comparing(MonthlyRewardsDto::getYearMonth))
                                 .collect(Collectors.toList());
 
-                long total = monthlyRewards.stream().mapToLong(MonthlyRewardsDto::getPoints).sum();
+                BigDecimal total = monthlyRewards.stream()
+                                .map(MonthlyRewardsDto::getPoints)
+                                .reduce(ZERO, BigDecimal::add);
 
                 return new RewardSummaryDto(customerId, name, monthlyRewards, total);
+        }
+
+        /**
+         * Resolve the inclusive transaction cutoff date based on configuration.
+         *
+         * @return the oldest transaction date to include in reward calculations
+         */
+        private LocalDate currentCutoffDate() {
+                return LocalDate.now().minusDays(transactionLookbackDays);
         }
 }
