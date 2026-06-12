@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.4</version>
+        <version>3.5.0</version>
         <relativePath/>
     </parent>
 
@@ -70,9 +70,9 @@
                 <version>0.8.13</version>
                 <configuration>
                     <excludes>
-                        <!-- Exclude entity and dto packages and the application class from coverage -->
-                        <exclude>**/entity/**</exclude>
-                        <exclude>**/dto/**</exclude>
+                        <exclude>com/example/rewards/entity/**</exclude>
+                        <exclude>com/example/rewards/dto/**</exclude>
+                        <exclude>com/example/rewards/exception/ErrorResponse*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
